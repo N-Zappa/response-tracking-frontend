@@ -1,18 +1,18 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation"; // Import useRouter for navigation
+import { useRouter } from "next/navigation";
 import { createVacancyResponse } from "./lib/api";
 import { VacancyResponse } from "./types/vacansyResponse";
 
 const VacancyForm = () => {
-  const router = useRouter(); // Initialize useRouter
+  const router = useRouter();
   const [formData, setFormData] = useState<VacancyResponse>({
     _id: "",
     company: "",
     vacancy: "",
-    min_salary: 0,
-    max_salary: 0,
+    min_salary: "",
+    max_salary: "",
     note: "",
     status: "RESUME_NOT_VIEWED",
   });
@@ -21,17 +21,30 @@ const VacancyForm = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]:
-        name === "min_salary" || name === "max_salary" ? Number(value) : value,
-    });
+    if (name === "min_salary" || name === "max_salary") {
+      if (value === "" || /^[0-9]*$/.test(value)) {
+        setFormData({
+          ...formData,
+          [name]: value,
+        });
+      }
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    await createVacancyResponse(formData);
-    router.push("/"); // Redirect to home after creating the vacancy
+    const formattedData: VacancyResponse = {
+      ...formData,
+      min_salary: formData.min_salary ? `${Number(formData.min_salary)}` : "0",
+      max_salary: formData.max_salary ? `${Number(formData.max_salary)}` : "0",
+    };
+    await createVacancyResponse(formattedData);
+    router.push("/");
   };
 
   return (
@@ -65,7 +78,7 @@ const VacancyForm = () => {
           <label>
             Minimum Salary:
             <input
-              type="number"
+              type="text"
               name="min_salary"
               value={formData.min_salary}
               onChange={handleChange}
@@ -77,7 +90,7 @@ const VacancyForm = () => {
           <label>
             Maximum Salary:
             <input
-              type="number"
+              type="text"
               name="max_salary"
               value={formData.max_salary}
               onChange={handleChange}
@@ -92,6 +105,7 @@ const VacancyForm = () => {
               name="note"
               value={formData.note}
               onChange={handleChange}
+              required
             ></textarea>
           </label>
         </div>
