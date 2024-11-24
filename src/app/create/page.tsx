@@ -1,10 +1,12 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation"; // Import useRouter for navigation
 import { createVacancyResponse } from "./lib/api";
 import { VacancyResponse } from "./types/vacansyResponse";
 
 const VacancyForm = () => {
+  const router = useRouter(); // Initialize useRouter
   const [formData, setFormData] = useState<VacancyResponse>({
     _id: "",
     company: "",
@@ -29,6 +31,7 @@ const VacancyForm = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     await createVacancyResponse(formData);
+    router.push("/"); // Redirect to home after creating the vacancy
   };
 
   return (
