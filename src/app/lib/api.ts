@@ -8,3 +8,14 @@ export const fetchVacancyResponses = async () => {
     throw new Error("Failed to fetch responses: " + error);
   }
 };
+
+export const deleteVacancyResponse = async (id: string) => {
+  try {
+    let { data } = await axios.delete(
+      `${process.env.NEXT_PUBLIC_API_URL}${id}`
+    );
+    return data;
+  } catch (error) {
+    throw new Error("Failed to fetch responses: " + error);
+  }
+};

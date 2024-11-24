@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { fetchVacancyResponses } from "./lib/api";
+import { deleteVacancyResponse, fetchVacancyResponses } from "./lib/api";
 import { VacancyResponse } from "./create/types/vacansyResponse";
-import EditModal from "./edit/components/EditModal";
+import EditModal from "./edit/components/editModal";
 
 const Page = () => {
   const [vacancyResponses, setVacancyResponses] = useState([]);
@@ -24,14 +24,17 @@ const Page = () => {
       const data = await fetchVacancyResponses();
       setVacancyResponses(data);
     };
-    console.log(vacancyResponses);
 
     loadVacancyResponses();
   }, []);
 
-  const handleEditClick = (vacancy: any) => {
+  const handleEditClick = (vacancy: VacancyResponse) => {
     setCurrentVacancy(vacancy);
     setModalOpen(true);
+  };
+
+  const handleDeleteClick = (vacancy: VacancyResponse) => {
+    deleteVacancyResponse(vacancy._id);
   };
 
   return (
@@ -60,6 +63,11 @@ const Page = () => {
               <td>
                 <button onClick={() => handleEditClick(vacancyResponse)}>
                   Edit
+                </button>
+              </td>
+              <td>
+                <button onClick={() => handleDeleteClick(vacancyResponse)}>
+                  Delete
                 </button>
               </td>
             </tr>
