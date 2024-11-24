@@ -5,36 +5,40 @@ import { useState, useEffect } from "react";
 import { deleteVacancyResponse, fetchVacancyResponses } from "./lib/api";
 import { VacancyResponse } from "./create/types/vacansyResponse";
 import EditModal from "./edit/components/editModal";
+import { updateVacancyResponse } from "./edit/api";
 
 const Page = () => {
-  const [vacancyResponses, setVacancyResponses] = useState([]);
+  const [vacancyResponses, setVacancyResponses] = useState<VacancyResponse[]>(
+    []
+  );
   const [isModalOpen, setModalOpen] = useState(false);
-  const [currentVacancy, setCurrentVacancy] = useState<VacancyResponse>({
-    _id: "",
-    company: "",
-    vacancy: "",
-    min_salary: 0,
-    max_salary: 0,
-    note: "",
-    status: "",
-  });
+  const [currentVacancy, setCurrentVacancy] = useState<VacancyResponse | null>(
+    null
+  );
 
   useEffect(() => {
-    const loadVacancyResponses = async () => {
-      const data = await fetchVacancyResponses();
-      setVacancyResponses(data);
-    };
-
     loadVacancyResponses();
   }, []);
+
+  const loadVacancyResponses = async () => {
+    const data = await fetchVacancyResponses();
+    setVacancyResponses(data);
+  };
 
   const handleEditClick = (vacancy: VacancyResponse) => {
     setCurrentVacancy(vacancy);
     setModalOpen(true);
   };
 
-  const handleDeleteClick = (vacancy: VacancyResponse) => {
-    deleteVacancyResponse(vacancy._id);
+  const handleSave = async (updatedVacancy: VacancyResponse) => {
+    await updateVacancyResponse(updatedVacancy, updatedVacancy._id);
+    await loadVacancyResponses();
+    setModalOpen(false);
+  };
+
+  const handleDeleteClick = async (vacancy: VacancyResponse) => {
+    await deleteVacancyResponse(vacancy._id);
+    await loadVacancyResponses();
   };
 
   return (
@@ -52,8 +56,8 @@ const Page = () => {
           </tr>
         </thead>
         <tbody>
-          {vacancyResponses.map((vacancyResponse: VacancyResponse, id: any) => (
-            <tr key={id}>
+          {vacancyResponses.map((vacancyResponse: VacancyResponse) => (
+            <tr key={vacancyResponse._id}>
               <td>{vacancyResponse.company}</td>
               <td>{vacancyResponse.vacancy}</td>
               <td>{vacancyResponse.min_salary}</td>
@@ -64,8 +68,6 @@ const Page = () => {
                 <button onClick={() => handleEditClick(vacancyResponse)}>
                   Edit
                 </button>
-              </td>
-              <td>
                 <button onClick={() => handleDeleteClick(vacancyResponse)}>
                   Delete
                 </button>
@@ -79,11 +81,14 @@ const Page = () => {
           <button>Create Vacancy</button>
         </Link>
       </p>
-      <EditModal
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-        vacancy={currentVacancy}
-      />
+      {currentVacancy && (
+        <EditModal
+          isOpen={isModalOpen}
+          onClose={() => setModalOpen(false)}
+          vacancy={currentVacancy}
+          onSave={handleSave}
+        />
+      )}
     </div>
   );
 };

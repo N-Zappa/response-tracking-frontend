@@ -7,9 +7,15 @@ interface EditModalProps {
   isOpen: boolean;
   onClose: () => void;
   vacancy: VacancyResponse;
+  onSave: (updatedVacancy: VacancyResponse) => void;
 }
 
-const editModal: React.FC<EditModalProps> = ({ isOpen, onClose, vacancy }) => {
+const EditModal: React.FC<EditModalProps> = ({
+  isOpen,
+  onClose,
+  vacancy,
+  onSave,
+}) => {
   const [formData, setFormData] = useState(vacancy);
 
   useEffect(() => {
@@ -24,6 +30,7 @@ const editModal: React.FC<EditModalProps> = ({ isOpen, onClose, vacancy }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await updateVacancyResponse(formData, vacancy._id);
+    onSave(formData);
     onClose();
   };
 
@@ -89,4 +96,4 @@ const editModal: React.FC<EditModalProps> = ({ isOpen, onClose, vacancy }) => {
   );
 };
 
-export default editModal;
+export default EditModal;
