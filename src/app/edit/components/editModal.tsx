@@ -37,8 +37,8 @@ const EditModal: React.FC<EditModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="modal">
-      <div className="modal-content">
+    <div>
+      <div>
         <h2>Edit Vacancy</h2>
         <form onSubmit={handleSubmit}>
           <label>

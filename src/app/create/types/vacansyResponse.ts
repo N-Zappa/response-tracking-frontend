@@ -5,5 +5,5 @@ export interface VacancyResponse {
   min_salary: number;
   max_salary: number;
   note: string;
-  status: string;
+  status: "RESUME_NOT_VIEWED" | "RESUME_VIEWED" | "INVITATION" | "REJECT";
 }

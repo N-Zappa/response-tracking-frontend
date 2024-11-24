@@ -12,7 +12,7 @@ const VacancyForm = () => {
     min_salary: 0,
     max_salary: 0,
     note: "",
-    status: "",
+    status: "RESUME_NOT_VIEWED",
   });
 
   const handleChange = (

@@ -6,6 +6,7 @@ import { deleteVacancyResponse, fetchVacancyResponses } from "./lib/api";
 import { VacancyResponse } from "./create/types/vacansyResponse";
 import EditModal from "./edit/components/editModal";
 import { updateVacancyResponse } from "./edit/api";
+import { statuses } from "./types/statuses";
 
 const Page = () => {
   const [vacancyResponses, setVacancyResponses] = useState<VacancyResponse[]>(
@@ -62,7 +63,7 @@ const Page = () => {
               <td>{vacancyResponse.vacancy}</td>
               <td>{vacancyResponse.min_salary}</td>
               <td>{vacancyResponse.max_salary}</td>
-              <td>{vacancyResponse.status}</td>
+              <td>{statuses[vacancyResponse.status]}</td>
               <td>{vacancyResponse.note}</td>
               <td>
                 <button onClick={() => handleEditClick(vacancyResponse)}>
