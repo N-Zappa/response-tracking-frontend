@@ -2,22 +2,17 @@
 import Link from "next/link";
 import { useState } from "react";
 import { createVacancyResponse } from "./lib/api";
-
-export interface VacancyResponseDTO {
-  company: string;
-  vacancy: string;
-  min_salary: number;
-  max_salary: number;
-  note: string;
-}
+import { VacancyResponse } from "./types/vacansyResponse";
 
 const VacancyForm = () => {
-  const [formData, setFormData] = useState<VacancyResponseDTO>({
+  const [formData, setFormData] = useState<VacancyResponse>({
+    _id: "",
     company: "",
     vacancy: "",
     min_salary: 0,
     max_salary: 0,
     note: "",
+    status: "",
   });
 
   const handleChange = (
@@ -33,7 +28,6 @@ const VacancyForm = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(formData);
     await createVacancyResponse(formData);
   };
 
