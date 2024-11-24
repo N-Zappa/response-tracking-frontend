@@ -3,6 +3,20 @@ import React, { useState, useEffect } from "react";
 import { updateVacancyResponse } from "../api";
 import { VacancyResponse } from "@/app/create/types/vacansyResponse";
 
+export enum statuses {
+  RESUME_NOT_VIEWED = "Not viewed",
+  RESUME_VIEWED = "Viewed",
+  INVITATION = "Invitation",
+  REJECT = "Reject",
+}
+
+const statusMappings: Record<statuses, string> = {
+  [statuses.RESUME_NOT_VIEWED]: "RESUME_NOT_VIEWED",
+  [statuses.RESUME_VIEWED]: "RESUME_VIEWED",
+  [statuses.INVITATION]: "INVITATION",
+  [statuses.REJECT]: "REJECT",
+};
+
 interface EditModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -16,15 +30,30 @@ const EditModal: React.FC<EditModalProps> = ({
   vacancy,
   onSave,
 }) => {
-  const [formData, setFormData] = useState(vacancy);
+  const [formData, setFormData] = useState<VacancyResponse>(vacancy);
 
   useEffect(() => {
     setFormData(vacancy);
   }, [vacancy]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+
+    if (name === "status") {
+      const backendValue = statusMappings[value as statuses];
+      setFormData({
+        ...formData,
+        [name]: backendValue as
+          | "RESUME_NOT_VIEWED"
+          | "RESUME_VIEWED"
+          | "INVITATION"
+          | "REJECT",
+      });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -85,6 +114,22 @@ const EditModal: React.FC<EditModalProps> = ({
               value={formData.note}
               onChange={handleChange}
             />
+          </label>
+          <label>
+            Status:
+            <select
+              name="status"
+              value={Object.keys(statusMappings).find(
+                (key) => statusMappings[key as statuses] === formData.status
+              )}
+              onChange={handleChange}
+            >
+              {Object.values(statuses).map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
           </label>
           <button type="submit">Save</button>
           <button type="button" onClick={onClose}>
