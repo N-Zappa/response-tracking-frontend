@@ -16,6 +16,7 @@ const VacancyForm = () => {
     note: "",
     status: "RESUME_NOT_VIEWED",
   });
+  const [error, setError] = useState<string>("");
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -38,6 +39,22 @@ const VacancyForm = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Check for empty required fields
+    if (
+      !formData.company ||
+      !formData.vacancy ||
+      !formData.min_salary ||
+      !formData.max_salary ||
+      !formData.note
+    ) {
+      setError("Please fill in all required fields.");
+      return;
+    }
+
+    // Clear error if validation passes
+    setError("");
+
     const formattedData: VacancyResponse = {
       ...formData,
       min_salary: formData.min_salary ? `${Number(formData.min_salary)}` : "0",
@@ -49,6 +66,8 @@ const VacancyForm = () => {
 
   return (
     <div>
+      {error && <div style={{ color: "red" }}>{error}</div>}{" "}
+      {/* Display error message */}
       <form onSubmit={handleSubmit}>
         <div>
           <label>
@@ -58,7 +77,6 @@ const VacancyForm = () => {
               name="company"
               value={formData.company}
               onChange={handleChange}
-              required
             />
           </label>
         </div>
@@ -70,7 +88,6 @@ const VacancyForm = () => {
               name="vacancy"
               value={formData.vacancy}
               onChange={handleChange}
-              required
             />
           </label>
         </div>
@@ -82,7 +99,6 @@ const VacancyForm = () => {
               name="min_salary"
               value={formData.min_salary}
               onChange={handleChange}
-              required
             />
           </label>
         </div>
@@ -94,7 +110,6 @@ const VacancyForm = () => {
               name="max_salary"
               value={formData.max_salary}
               onChange={handleChange}
-              required
             />
           </label>
         </div>
@@ -105,7 +120,6 @@ const VacancyForm = () => {
               name="note"
               value={formData.note}
               onChange={handleChange}
-              required
             ></textarea>
           </label>
         </div>

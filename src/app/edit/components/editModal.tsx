@@ -31,6 +31,7 @@ const EditModal: React.FC<EditModalProps> = ({
   onSave,
 }) => {
   const [formData, setFormData] = useState<VacancyResponse>(vacancy);
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
     setFormData(vacancy);
@@ -58,6 +59,21 @@ const EditModal: React.FC<EditModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check for empty required fields
+    if (
+      !formData.company ||
+      !formData.vacancy ||
+      !formData.min_salary ||
+      !formData.max_salary
+    ) {
+      setError("Please fill in all required fields.");
+      return;
+    }
+
+    // Clear error if validation passes
+    setError("");
+
     await updateVacancyResponse(formData, vacancy._id);
     onSave(formData);
     onClose();
@@ -69,6 +85,8 @@ const EditModal: React.FC<EditModalProps> = ({
     <div>
       <div>
         <h2>Edit Vacancy</h2>
+        {error && <div style={{ color: "red" }}>{error}</div>}{" "}
+        {/* Display error message */}
         <form onSubmit={handleSubmit}>
           <label>
             Company:
