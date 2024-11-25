@@ -38,36 +38,43 @@ const VacancyForm = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    try {
+      e.preventDefault();
 
-    // Check for empty required fields
-    if (
-      !formData.company ||
-      !formData.vacancy ||
-      !formData.min_salary ||
-      !formData.max_salary ||
-      !formData.note
-    ) {
-      setError("Please fill in all required fields.");
-      return;
+      if (
+        !formData.company ||
+        !formData.vacancy ||
+        !formData.min_salary ||
+        !formData.max_salary ||
+        !formData.note
+      ) {
+        setError("Please fill in all required fields.");
+        return;
+      }
+
+      setError("");
+
+      const formattedData: VacancyResponse = {
+        ...formData,
+        min_salary: formData.min_salary
+          ? `${Number(formData.min_salary)}`
+          : "0",
+        max_salary: formData.max_salary
+          ? `${Number(formData.max_salary)}`
+          : "0",
+      };
+      await createVacancyResponse(formattedData);
+      router.push("/");
+    } catch (error: any) {
+      if (error.message.response.data.error.includes("salary")) {
+        setError(error.message.response.data.error);
+      } else setError("An unknown error occurred.");
     }
-
-    // Clear error if validation passes
-    setError("");
-
-    const formattedData: VacancyResponse = {
-      ...formData,
-      min_salary: formData.min_salary ? `${Number(formData.min_salary)}` : "0",
-      max_salary: formData.max_salary ? `${Number(formData.max_salary)}` : "0",
-    };
-    await createVacancyResponse(formattedData);
-    router.push("/");
   };
 
   return (
     <div>
       {error && <div style={{ color: "red" }}>{error}</div>}{" "}
-      {/* Display error message */}
       <form onSubmit={handleSubmit}>
         <div>
           <label>

@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { VacancyResponse } from "../types/vacansyResponse";
 
 export const createVacancyResponse = async (dataDto: VacancyResponse) => {
@@ -14,7 +14,7 @@ export const createVacancyResponse = async (dataDto: VacancyResponse) => {
       }
     );
     return data;
-  } catch (error) {
-    throw new Error("Failed to create response: " + error);
+  } catch (error: any) {
+    throw new AxiosError(error);
   }
 };
