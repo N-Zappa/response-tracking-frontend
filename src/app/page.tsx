@@ -1,10 +1,8 @@
 "use client";
-
-import Link from "next/link";
 import { useState, useEffect } from "react";
 import { deleteVacancyResponse, fetchVacancyResponses } from "./lib/api";
 import { VacancyResponse } from "./create/types/vacansyResponse";
-import EditModal from "./edit/components/editModal"; // Import your edit modal
+import EditModal from "./edit/components/editModal";
 import { updateVacancyResponse } from "./edit/api";
 import { statuses } from "./types/statuses";
 import {
@@ -18,7 +16,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { createVacancyResponse } from "./create/lib/api";
-import VacancyForm from "./create/page";
+import VacancyForm from "./create/createModal";
 
 const Page = () => {
   const [vacancyResponses, setVacancyResponses] = useState<VacancyResponse[]>(

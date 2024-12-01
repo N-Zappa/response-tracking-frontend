@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,9 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@nextui-org/input";
-import { createVacancyResponse } from "./lib/api";
 import { VacancyResponse } from "./types/vacansyResponse";
-import { useRouter } from "next/navigation";
 
 const formSchema = z
   .object({
@@ -49,7 +48,6 @@ const VacancyForm: React.FC<VacancyFormProps> = ({
   onClose,
   onSave,
 }) => {
-  const router = useRouter();
   const form = useForm<VacancyResponse>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -63,15 +61,11 @@ const VacancyForm: React.FC<VacancyFormProps> = ({
   });
 
   const handleSubmit = async (data: VacancyResponse) => {
-    try {
-      await onSave(data);
-      onClose(); // Close the modal after saving
-    } catch (error: any) {
-      console.error("Error creating vacancy response:", error);
-    }
+    await onSave(data);
+    onClose();
   };
 
-  if (!isOpen) return null; // Don't render if not open
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 transition-opacity">

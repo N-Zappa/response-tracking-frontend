@@ -1,9 +1,9 @@
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { VacancyResponse } from "../types/vacansyResponse";
 
 export const createVacancyResponse = async (dataDto: VacancyResponse) => {
   try {
-    let { data } = await axios.post(
+    const { data } = await axios.post(
       `${process.env.NEXT_PUBLIC_API_URL}create`,
       {
         company: dataDto.company,
@@ -14,7 +14,11 @@ export const createVacancyResponse = async (dataDto: VacancyResponse) => {
       }
     );
     return data;
-  } catch (error: any) {
-    throw new AxiosError(error);
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw error;
+    } else {
+      throw new Error("An unexpected error occurred");
+    }
   }
 };

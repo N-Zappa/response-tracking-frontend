@@ -1,6 +1,5 @@
 import axios from "axios";
 import { VacancyResponse } from "../create/types/vacansyResponse";
-import { statuses } from "../types/statuses";
 
 export const updateVacancyResponse = async (
   dataDto: VacancyResponse,
