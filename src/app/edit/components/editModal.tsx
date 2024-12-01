@@ -1,21 +1,49 @@
-"use client";
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { updateVacancyResponse } from "../api";
 import { VacancyResponse } from "@/app/create/types/vacansyResponse";
+import { Textarea } from "@nextui-org/input";
+import { Select, SelectSection, SelectItem } from "@nextui-org/select";
+import { statuses } from "@/app/types/statuses";
 
-export enum statuses {
-  RESUME_NOT_VIEWED = "Not viewed",
-  RESUME_VIEWED = "Viewed",
-  INVITATION = "Invitation",
-  REJECT = "Reject",
-}
-
-const statusMappings: Record<statuses, string> = {
-  [statuses.RESUME_NOT_VIEWED]: "RESUME_NOT_VIEWED",
-  [statuses.RESUME_VIEWED]: "RESUME_VIEWED",
-  [statuses.INVITATION]: "INVITATION",
-  [statuses.REJECT]: "REJECT",
-};
+const formSchema = z
+  .object({
+    company: z.string().min(1, { message: "Company is required." }),
+    vacancy: z.string().min(1, { message: "Vacancy is required." }),
+    min_salary: z
+      .string()
+      .refine((value) => !isNaN(Number(value)) && Number(value) >= 0, {
+        message: "Minimum salary must be a positive number.",
+      }),
+    max_salary: z
+      .string()
+      .refine((value) => !isNaN(Number(value)) && Number(value) >= 0, {
+        message: "Maximum salary must be a positive number.",
+      }),
+    note: z.string().optional(),
+    status: z.enum([
+      statuses[0].key,
+      statuses[1].key,
+      statuses[2].key,
+      statuses[3].key,
+    ]),
+  })
+  .refine((data) => Number(data.min_salary) < Number(data.max_salary), {
+    message: "Minimum salary must be less than maximum salary.",
+    path: ["min_salary"],
+  });
 
 interface EditModalProps {
   isOpen: boolean;
@@ -30,130 +58,168 @@ const EditModal: React.FC<EditModalProps> = ({
   vacancy,
   onSave,
 }) => {
-  const [formData, setFormData] = useState<VacancyResponse>(vacancy);
-  const [error, setError] = useState<string>("");
+  const form = useForm<VacancyResponse>({
+    resolver: zodResolver(formSchema),
+
+    defaultValues: {
+      ...vacancy,
+      status: vacancy.status,
+      min_salary: `${vacancy.min_salary}`,
+      max_salary: `${vacancy.max_salary}`,
+    },
+  });
 
   useEffect(() => {
-    setFormData(vacancy);
-  }, [vacancy]);
+    console.log(" status: vacancy.status", vacancy.status);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
+    form.reset({
+      ...vacancy,
+      status: vacancy.status,
+      min_salary: `${vacancy.min_salary}`,
+      max_salary: `${vacancy.max_salary}`,
+    });
+  }, [vacancy, form]);
 
-    if (name === "status") {
-      const backendValue = statusMappings[value as statuses];
-      setFormData({
-        ...formData,
-        [name]: backendValue as
-          | "RESUME_NOT_VIEWED"
-          | "RESUME_VIEWED"
-          | "INVITATION"
-          | "REJECT",
-      });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Check for empty required fields
-    if (
-      !formData.company ||
-      !formData.vacancy ||
-      !formData.min_salary ||
-      !formData.max_salary
-    ) {
-      setError("Please fill in all required fields.");
-      return;
-    }
-
-    // Clear error if validation passes
-    setError("");
-
-    await updateVacancyResponse(formData, vacancy._id);
-    onSave(formData);
+  const handleSubmit = async (data: VacancyResponse) => {
+    await updateVacancyResponse(data, vacancy._id);
+    onSave(data);
     onClose();
   };
 
   if (!isOpen) return null;
 
   return (
-    <div>
-      <div>
-        <h2>Edit Vacancy</h2>
-        {error && <div style={{ color: "red" }}>{error}</div>}{" "}
-        {/* Display error message */}
-        <form onSubmit={handleSubmit}>
-          <label>
-            Company:
-            <input
-              type="text"
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 transition-opacity">
+      <div className="bg-white rounded-lg p-8 shadow-lg w-full max-w-3xl">
+        <h2 className="text-lg font-semibold mb-4">Edit Vacancy</h2>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-4"
+          >
+            <FormField
+              control={form.control}
               name="company"
-              value={formData.company}
-              onChange={handleChange}
-            />
-          </label>
-          <label>
-            Vacancy:
-            <input
-              type="text"
-              name="vacancy"
-              value={formData.vacancy}
-              onChange={handleChange}
-            />
-          </label>
-          <label>
-            Min Salary:
-            <input
-              type="number"
-              name="min_salary"
-              value={formData.min_salary}
-              onChange={handleChange}
-            />
-          </label>
-          <label>
-            Max Salary:
-            <input
-              type="number"
-              name="max_salary"
-              value={formData.max_salary}
-              onChange={handleChange}
-            />
-          </label>
-          <label>
-            Note:
-            <input
-              type="text"
-              name="note"
-              value={formData.note}
-              onChange={handleChange}
-            />
-          </label>
-          <label>
-            Status:
-            <select
-              name="status"
-              value={Object.keys(statusMappings).find(
-                (key) => statusMappings[key as statuses] === formData.status
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Company</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Company Name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-              onChange={handleChange}
-            >
-              {Object.values(statuses).map((status) => (
-                <option key={status} value={status}>
-                  {status}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button type="submit">Save</button>
-          <button type="button" onClick={onClose}>
-            Cancel
-          </button>
-        </form>
+            />
+            <FormField
+              control={form.control}
+              name="vacancy"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Vacancy</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Vacancy Title" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="min_salary"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Min Salary</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="Minimum Salary"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="max_salary"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Max Salary</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="Maximum Salary"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="note"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Note</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      maxRows={2}
+                      className="max-h-xs"
+                      placeholder="Additional Notes"
+                      {...field}
+                      style={{
+                        resize: "none",
+                        marginTop: "1rem",
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <FormControl>
+                    <Select
+                      {...field}
+                      defaultSelectedKeys={[
+                        `${
+                          statuses.filter(
+                            (statuse) => statuse.key === vacancy.status
+                          )[0].key
+                        }`,
+                      ]}
+                    >
+                      <SelectSection className="rounded border-2">
+                        {statuses.map((statuse) => (
+                          <SelectItem
+                            className="bg-white cursor-pointer"
+                            key={statuse.key}
+                          >
+                            {statuse.label}
+                          </SelectItem>
+                        ))}
+                      </SelectSection>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="flex space-x-2">
+              <Button type="submit">Save</Button>
+              <Button type="button" onClick={onClose} variant="outline">
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </Form>
       </div>
     </div>
   );
